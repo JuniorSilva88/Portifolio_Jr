@@ -1,7 +1,31 @@
 # Portfólio — Junior Alexandre da Silva
 
-Meu portfólio pessoal feito em **Python + Django**, pronto para hospedar no
-**Render** (aplicação completa) e na **Vercel** (função serverless).
+Meu portfólio pessoal feito em **Python + Django**, hospedado no
+**Render** (aplicação completa).
+
+Render: funcionando
+
+Web Service: portfolio-jr;
+
+URL: https://portfolio-jr.onrender.com;
+
+PostgreSQL: portfolio-db;
+
+Django: funcionando;
+
+Migrations: aplicadas;
+
+Dados iniciais: carregados;
+
+Staticfiles: publicados;
+
+Gunicorn: funcionando;
+
+Health check: 200;
+
+Blueprint: funcionando;
+
+GitHub → Render: integrado
 
 O site é responsivo, tem tema claro/escuro, painel administrativo para eu
 editar o conteúdo sem novo deploy, documentação técnica dentro da própria
