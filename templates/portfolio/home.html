@@ -1,0 +1,235 @@
+{% extends "base.html" %}
+{% comment %} ==========================================================================
+   home.html — página inicial (hero, sobre, stack, projetos, contato)
+   ==========================================================================
+   Montei a home como uma página única com âncoras (#sobre, #stack...) porque
+   é o formato que funciona melhor em portfólio: quem chega vê tudo rolando,
+   sem precisar clicar em nada.
+   ========================================================================== {% endcomment %}
+
+{% block titulo %}{{ perfil.nome }} — {{ perfil.titulo }}{% endblock %}
+{% block descricao %}{{ perfil.resumo }}{% endblock %}
+
+{% block conteudo %}
+
+{# ======================= 1. HERO ======================================= #}
+<section class="hero">
+  <div class="container hero__interno">
+    <div>
+      {% if perfil.disponivel %}
+        <span class="selo"><span class="selo__ponto"></span> Disponível para novos projetos</span>
+      {% endif %}
+
+      <h1>
+        Olá, eu sou<br />
+        <span class="hero__destaque">{{ perfil.nome|default:"Desenvolvedor" }}</span>
+      </h1>
+
+      <p class="hero__texto">{{ perfil.resumo }}</p>
+
+      <div class="hero__acoes">
+        <a class="botao botao--principal" href="{% url 'portfolio:projetos' %}">
+          Ver meus projetos
+        </a>
+        <a class="botao botao--secundario" href="{% url 'portfolio:contato' %}">
+          Falar comigo
+        </a>
+      </div>
+
+      {% comment %} Números do topo. O total de projetos vem da view (contagem no banco),
+         não é digitado à mão. {% endcomment %}
+      <div class="hero__numeros">
+        <div>
+          <div class="numero__valor">{{ total_projetos }}</div>
+          <div class="numero__rotulo">Projetos publicados</div>
+        </div>
+        <div>
+          <div class="numero__valor">Python</div>
+          <div class="numero__rotulo">Foco atual</div>
+        </div>
+        <div>
+          <div class="numero__valor">Curitiba</div>
+          <div class="numero__rotulo">Paraná, Brasil</div>
+        </div>
+      </div>
+    </div>
+
+    {% comment %} Cartão decorativo em forma de terminal: reforça que o portfólio é de
+       alguém que escreve código, sem precisar de imagem pesada. {% endcomment %}
+    <div class="terminal" aria-hidden="true">
+      <div class="terminal__topo">
+        <span class="terminal__bolinha"></span>
+        <span class="terminal__bolinha"></span>
+        <span class="terminal__bolinha terminal__bolinha--verde"></span>
+        <span style="margin-left: var(--e-2)">perfil.py</span>
+      </div>
+      <div class="terminal__corpo">class <span class="terminal__valor">Desenvolvedor</span>:
+    <span class="terminal__chave">nome</span> = "{{ perfil.nome }}"
+    <span class="terminal__chave">stack</span> = ["Python", "Django", "JS"]
+    <span class="terminal__chave">local</span> = "Curitiba, PR"
+    <span class="terminal__chave">status</span> = "sempre evoluindo"</div>
+    </div>
+  </div>
+</section>
+
+{# ======================= 2. SOBRE ====================================== #}
+<section class="secao secao--alt" id="sobre">
+  <div class="container">
+    <div class="secao__cabecalho">
+      <span class="rotulo">Sobre mim</span>
+      <h2>Quem está por trás do código</h2>
+    </div>
+
+    <div class="sobre">
+      <div class="sobre__texto revelar">
+        {% comment %} A bio é um único campo no banco; a property paragrafos_bio quebra
+           em parágrafos, então eu só itero aqui. {% endcomment %}
+        {% for paragrafo in perfil.paragrafos_bio %}
+          <p>{{ paragrafo }}</p>
+        {% empty %}
+          <p class="texto-suave">Biografia ainda não cadastrada no painel.</p>
+        {% endfor %}
+      </div>
+
+      <ul class="lista-info revelar">
+        <li><strong>Nome</strong> <span>{{ perfil.nome }}</span></li>
+        <li><strong>Formação</strong> <span>{{ perfil.titulo }}</span></li>
+        {% if perfil.cidade %}<li><strong>Local</strong> <span>{{ perfil.cidade }}</span></li>{% endif %}
+        {% if perfil.email %}
+          <li><strong>E-mail</strong> <a href="mailto:{{ perfil.email }}">{{ perfil.email }}</a></li>
+        {% endif %}
+        {% if perfil.github %}
+          <li><strong>GitHub</strong> <a href="{{ perfil.github }}" target="_blank" rel="noopener">@JuniorSilva88</a></li>
+        {% endif %}
+        <li>
+          <strong>Status</strong>
+          <span>{% if perfil.disponivel %}Aberto a oportunidades e freelances{% else %}Em projeto no momento{% endif %}</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+{# ======================= 3. STACK ====================================== #}
+<section class="secao" id="stack">
+  <div class="container">
+    <div class="secao__cabecalho">
+      <span class="rotulo">Stack</span>
+      <h2>Tecnologias que eu uso no dia a dia</h2>
+      <p class="texto-suave">
+        As barras mostram o meu nível de confiança em cada ferramenta hoje —
+        e elas mudam conforme eu estudo.
+      </p>
+    </div>
+
+    {% comment %} grupos_habilidades é um dicionário {categoria: [habilidades]} montado
+       na view. Aqui eu só desenho. {% endcomment %}
+    <div class="grade">
+      {% for categoria, habilidades in grupos_habilidades.items %}
+        <div class="card revelar">
+          <h3 class="card__titulo">{{ categoria }}</h3>
+          <div>
+            {% for habilidade in habilidades %}
+              <div class="habilidade">
+                <div class="habilidade__topo">
+                  <span>{{ habilidade.nome }}</span>
+                  <span class="habilidade__nivel">{{ habilidade.nivel }}%</span>
+                </div>
+                <div class="barra">
+                  {% comment %} data-nivel é lido pelo JS para animar a largura ao entrar
+                     na tela. Sem JS, a barra fica em 0 e o número ao lado já
+                     informa o valor — a informação não se perde. {% endcomment %}
+                  <div class="barra__preenchimento" data-nivel="{{ habilidade.nivel }}"></div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      {% empty %}
+        <p class="vazio">Nenhuma habilidade cadastrada ainda.</p>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+{# ======================= 4. PROJETOS ================================... #}
+<section class="secao secao--alt" id="projetos">
+  <div class="container">
+    <div class="secao__cabecalho">
+      <span class="rotulo">Portfólio</span>
+      <h2>Projetos em destaque</h2>
+      <p class="texto-suave">
+        Uma seleção do que eu construí. A lista completa fica na página de projetos.
+      </p>
+    </div>
+
+    <div class="grade">
+      {% for projeto in projetos %}
+        {# Reaproveito o mesmo card da listagem #}
+        {% include "portfolio/partials/card_projeto.html" %}
+      {% empty %}
+        <p class="vazio">Ainda não há projetos publicados.</p>
+      {% endfor %}
+    </div>
+
+    <div style="margin-top: var(--e-10)">
+      <a class="botao botao--secundario" href="{% url 'portfolio:projetos' %}">
+        Ver todos os projetos
+      </a>
+    </div>
+  </div>
+</section>
+
+{# ======================= 5. CONTATO =================================... #}
+<section class="secao" id="contato">
+  <div class="container">
+    <div class="sobre">
+      <div>
+        <span class="rotulo">Contato</span>
+        <h2>Vamos construir algo juntos</h2>
+        <p class="texto-suave" style="margin-top: var(--e-4)">
+          Tem um projeto em mente, uma vaga ou só quer trocar ideia sobre código?
+          Me manda uma mensagem — eu respondo todas.
+        </p>
+
+        <ul class="lista-info" style="margin-top: var(--e-8)">
+          {% if perfil.email %}
+            <li><strong>E-mail</strong> <a href="mailto:{{ perfil.email }}">{{ perfil.email }}</a></li>
+          {% endif %}
+          {% if perfil.github %}
+            <li><strong>GitHub</strong> <a href="{{ perfil.github }}" target="_blank" rel="noopener">github.com/JuniorSilva88</a></li>
+          {% endif %}
+          <li><strong>Resposta</strong> <span>Normalmente em até 24 horas</span></li>
+        </ul>
+      </div>
+
+      {% comment %} O formulário posta na view de contato (ContatoView). Mantenho o
+         action explícito porque este form está na home, não em /contato/. {% endcomment %}
+      <form class="form card" method="post" action="{% url 'portfolio:contato' %}">
+        {% csrf_token %}
+        <div class="form__linha">
+          <div class="form__campo">
+            <label for="{{ form.nome.id_for_label }}">Nome</label>
+            {{ form.nome }}
+          </div>
+          <div class="form__campo">
+            <label for="{{ form.email.id_for_label }}">E-mail</label>
+            {{ form.email }}
+          </div>
+        </div>
+        <div class="form__campo">
+          <label for="{{ form.assunto.id_for_label }}">Assunto</label>
+          {{ form.assunto }}
+        </div>
+        <div class="form__campo">
+          <label for="{{ form.conteudo.id_for_label }}">Mensagem</label>
+          {{ form.conteudo }}
+        </div>
+        {{ form.website }}{# honeypot invisível anti-robô #}
+        <button class="botao botao--principal" type="submit">Enviar mensagem</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

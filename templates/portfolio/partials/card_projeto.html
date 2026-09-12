@@ -1,0 +1,31 @@
+{% comment %} ==========================================================================
+   card_projeto.html — card usado na home e na listagem
+   ==========================================================================
+   Deixei em um include separado para eu manter UM card só. Se eu mudar o
+   layout aqui, muda nas duas páginas ao mesmo tempo.
+   Espera receber a variável "projeto" no contexto.
+   ========================================================================== {% endcomment %}
+<article class="card revelar">
+  <div class="card__topo">
+    <h3 class="card__titulo">
+      <a href="{{ projeto.get_absolute_url }}">{{ projeto.titulo }}</a>
+    </h3>
+    {% if projeto.destaque %}<span class="selo">Destaque</span>{% endif %}
+  </div>
+
+  <p class="card__resumo">{{ projeto.resumo }}</p>
+
+  {% if projeto.lista_tecnologias %}
+    <div class="chips">
+      {# Mostro no máximo 3 chips para o card não crescer demais #}
+      {% for tec in projeto.lista_tecnologias|slice:":3" %}
+        <span class="chip">{{ tec }}</span>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <div class="card__rodape">
+    <span>{{ projeto.linguagem|default:"—" }}{% if projeto.ano %} &middot; {{ projeto.ano }}{% endif %}</span>
+    <a href="{{ projeto.get_absolute_url }}" aria-label="Ver detalhes de {{ projeto.titulo }}">Ver detalhes &rarr;</a>
+  </div>
+</article>

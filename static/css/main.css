@@ -1,0 +1,1135 @@
+/* =========================================================================
+   main.css — folha de estilo única do portfólio
+   =========================================================================
+   Como eu organizei este arquivo (nesta ordem, de propósito):
+
+   1. Tokens        -> variáveis de cor, tipografia e espaçamento
+   2. Reset e base  -> normalização e estilos de elemento
+   3. Layout        -> container, seções, grades
+   4. Componentes   -> header, botões, cards, formulário, rodapé
+   5. Páginas       -> ajustes específicos de cada tela
+   6. Responsivo    -> media queries (mobile-first do menor para o maior)
+   7. Acessibilidade -> foco visível e preferência por menos movimento
+
+   Regra que eu sigo: nenhuma cor e nenhum espaçamento "solto" no meio do
+   código. Tudo sai dos tokens do bloco 1. Se eu quiser trocar a paleta do
+   site inteiro, eu mexo em um lugar só.
+   ========================================================================= */
+
+/* =========================================================================
+   1. TOKENS
+   ========================================================================= */
+
+:root,
+[data-theme="light"] {
+  /* --- Paleta: azul profundo (marca) + verde esmeralda (destaque) -------
+     Escolhi azul + verde porque passa tecnologia e confiança, e combina
+     com a proposta do portfólio. Nada de vermelho, amarelo ou rosa —
+     inclusive nos estados de erro, onde eu uso um azul escuro sóbrio. */
+  --azul-900: #08182c;
+  --azul-800: #0d2540;
+  --azul-700: #123456;
+  --azul-600: #17497a;
+  --azul-500: #1f6fb2;
+  --azul-300: #7fb4de;
+  --azul-100: #dceaf6;
+
+  --verde-600: #0f7a5f;
+  --verde-500: #12a074;
+  --verde-400: #22c58f;
+  --verde-100: #d8f5e9;
+
+  /* --- Papéis semânticos (é isso que eu uso nos componentes) ---------- */
+  --fundo: #f6f9fc; /* fundo da página */
+  --superficie: #ffffff; /* cartões e blocos */
+  --superficie-2: #eef4fa; /* blocos alternados */
+  --borda: #d6e3ef;
+  --texto: var(--azul-900); /* texto principal */
+  --texto-suave: #4a6480; /* texto secundário */
+  --marca: var(--azul-600);
+  --marca-forte: var(--azul-800);
+  --destaque: var(--verde-600); /* acento único: CTA, links, selos */
+  --destaque-suave: var(--verde-100);
+  --sombra: 0 1px 2px rgba(8, 24, 44, 0.06), 0 12px 32px rgba(8, 24, 44, 0.08);
+
+  /* --- Tipografia: Cabinet Grotesk (títulos) + Satoshi (texto) --------- */
+  --fonte-titulo: "Cabinet Grotesk", "Satoshi", system-ui, sans-serif;
+  --fonte-texto: "Satoshi", system-ui, -apple-system, sans-serif;
+  --fonte-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  /* Escala fluida com clamp(): o tamanho acompanha a largura da tela,
+     sem eu precisar de media query para cada texto. */
+  --texto-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
+  --texto-sm: clamp(0.875rem, 0.8rem + 0.35vw, 1rem);
+  --texto-base: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
+  --texto-lg: clamp(1.125rem, 1rem + 0.75vw, 1.5rem);
+  --texto-xl: clamp(1.5rem, 1.2rem + 1.25vw, 2.25rem);
+  --texto-2xl: clamp(2rem, 1.2rem + 2.5vw, 3.5rem);
+
+  /* Espaçamento em múltiplos de 4px */
+  --e-1: 0.25rem;
+  --e-2: 0.5rem;
+  --e-3: 0.75rem;
+  --e-4: 1rem;
+  --e-6: 1.5rem;
+  --e-8: 2rem;
+  --e-10: 2.5rem;
+  --e-12: 3rem;
+  --e-16: 4rem;
+  --e-24: 6rem;
+
+  --raio: 14px;
+  --raio-sm: 8px;
+  --largura: 1140px; /* largura máxima do conteúdo */
+  --transicao: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Modo escuro: eu troco só os papéis semânticos, os componentes nem sabem
+   que o tema mudou. O atributo data-theme é escrito pelo JS. */
+[data-theme="dark"] {
+  --fundo: #061420;
+  --superficie: #0c2032;
+  --superficie-2: #102a40;
+  --borda: #1c3d59;
+  --texto: #e8f1f8;
+  --texto-suave: #9db6cc;
+  --marca: var(--azul-300);
+  --marca-forte: #ffffff;
+  --destaque: var(--verde-400);
+  --destaque-suave: rgba(34, 197, 143, 0.14);
+  --sombra: 0 1px 2px rgba(0, 0, 0, 0.4), 0 16px 40px rgba(0, 0, 0, 0.45);
+}
+
+/* =========================================================================
+   2. RESET E BASE
+   ========================================================================= */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box; /* padding não estoura mais a largura */
+}
+
+* {
+  margin: 0;
+}
+
+html {
+  scroll-behavior: smooth; /* rolagem suave nos links de âncora do menu */
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--fundo);
+  color: var(--texto);
+  font-family: var(--fonte-texto);
+  font-size: var(--texto-base);
+  line-height: 1.7;
+  /* Uso o mesmo padrão de renderização em todo lugar para o texto não
+     ficar mais fino em um navegador do que em outro. */
+  -webkit-font-smoothing: antialiased;
+  transition: background var(--transicao), color var(--transicao);
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--fonte-titulo);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: var(--marca-forte);
+  text-wrap: balance; /* evita título com uma palavra órfã na última linha */
+}
+
+h1 {
+  font-size: var(--texto-2xl);
+}
+h2 {
+  font-size: var(--texto-xl);
+}
+h3 {
+  font-size: var(--texto-lg);
+}
+
+p {
+  text-wrap: pretty;
+}
+
+a {
+  color: var(--destaque);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  transition: color var(--transicao), opacity var(--transicao);
+}
+
+a:hover {
+  opacity: 0.75;
+}
+
+/* O atributo hidden do HTML não esconde elementos SVG sozinho (a regra
+   padrão do navegador vale só para o namespace HTML). Como eu uso hidden
+   para alternar os ícones de sol/lua, declaro a regra explicitamente. */
+[hidden] {
+  display: none !important;
+}
+
+img,
+svg {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+code {
+  font-family: var(--fonte-mono);
+  font-size: 0.9em;
+  background: var(--superficie-2);
+  border: 1px solid var(--borda);
+  border-radius: 6px;
+  padding: 0.1em 0.4em;
+}
+
+/* Bloco de código das páginas de documentação */
+pre {
+  font-family: var(--fonte-mono);
+  font-size: var(--texto-sm);
+  background: var(--azul-900);
+  color: #dceaf6;
+  border-radius: var(--raio-sm);
+  padding: var(--e-4);
+  overflow-x: auto; /* código longo rola dentro do bloco, não estica a página */
+  line-height: 1.6;
+}
+
+pre code {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: inherit;
+}
+
+/* =========================================================================
+   3. LAYOUT
+   ========================================================================= */
+
+.container {
+  width: 100%;
+  max-width: var(--largura);
+  margin-inline: auto;
+  /* Respiro lateral que cresce junto com a tela */
+  padding-inline: clamp(var(--e-4), 4vw, var(--e-8));
+}
+
+.secao {
+  /* Espaçamento vertical fluido: apertado no celular, generoso no desktop */
+  padding-block: clamp(var(--e-12), 8vw, var(--e-24));
+}
+
+.secao--alt {
+  background: var(--superficie-2);
+}
+
+.secao__cabecalho {
+  max-width: 60ch; /* linha de leitura confortável */
+  margin-bottom: var(--e-10);
+}
+
+.rotulo {
+  /* Rótulo pequeno em maiúsculas que eu uso acima dos títulos de seção */
+  display: inline-flex;
+  align-items: center;
+  gap: var(--e-2);
+  font-size: var(--texto-xs);
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--destaque);
+  margin-bottom: var(--e-3);
+}
+
+.rotulo::before {
+  content: "";
+  width: 24px;
+  height: 2px;
+  background: currentColor;
+}
+
+.texto-suave {
+  color: var(--texto-suave);
+}
+
+/* Grade automática: eu digo o tamanho mínimo do card e o navegador decide
+   quantas colunas cabem. Isso deixa o layout responsivo sem media query. */
+.grade {
+  display: grid;
+  gap: var(--e-6);
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+}
+
+/* =========================================================================
+   4. COMPONENTES
+   ========================================================================= */
+
+/* --- 4.1 Header e navegação ------------------------------------------- */
+
+.header {
+  position: sticky; /* menu acompanha a rolagem */
+  top: 0;
+  z-index: 50;
+  background: color-mix(in srgb, var(--fundo) 88%, transparent);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--borda);
+}
+
+.header__interno {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e-4);
+  min-height: 68px;
+}
+
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--e-3);
+  font-family: var(--fonte-titulo);
+  font-weight: 700;
+  font-size: var(--texto-sm);
+  letter-spacing: -0.01em;
+  color: var(--marca-forte);
+  text-decoration: none;
+}
+
+.logo svg {
+  color: var(--destaque); /* o SVG usa currentColor, então herda daqui */
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: var(--e-6);
+}
+
+.nav__link {
+  font-size: var(--texto-sm);
+  font-weight: 500;
+  color: var(--texto-suave);
+  text-decoration: none;
+  padding-block: var(--e-2);
+  position: relative;
+}
+
+.nav__link:hover,
+.nav__link[aria-current="page"] {
+  color: var(--marca-forte);
+  opacity: 1;
+}
+
+/* Sublinhado que cresce no hover — detalhe pequeno, efeito grande */
+.nav__link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 2px;
+  width: 0;
+  background: var(--destaque);
+  transition: width var(--transicao);
+}
+
+.nav__link:hover::after,
+.nav__link[aria-current="page"]::after {
+  width: 100%;
+}
+
+.header__acoes {
+  display: flex;
+  align-items: center;
+  gap: var(--e-2);
+}
+
+/* Botão de tema e botão do menu mobile compartilham este estilo */
+.botao-icone {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-sm);
+  background: var(--superficie);
+  color: var(--texto);
+  cursor: pointer;
+  transition: border-color var(--transicao), color var(--transicao);
+}
+
+.botao-icone:hover {
+  border-color: var(--destaque);
+  color: var(--destaque);
+}
+
+.botao-menu {
+  display: none; /* só aparece no mobile (ver bloco 6) */
+}
+
+/* --- 4.2 Botões -------------------------------------------------------- */
+
+.botao {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--e-2);
+  padding: var(--e-3) var(--e-6);
+  border-radius: var(--raio-sm);
+  border: 1px solid transparent;
+  font-family: var(--fonte-texto);
+  font-size: var(--texto-sm);
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform var(--transicao), background var(--transicao),
+    border-color var(--transicao), color var(--transicao);
+}
+
+.botao:hover {
+  transform: translateY(-2px); /* microinteração discreta */
+  opacity: 1;
+}
+
+.botao--principal {
+  background: var(--destaque);
+  color: #ffffff;
+}
+
+[data-theme="dark"] .botao--principal {
+  color: var(--azul-900); /* no escuro o verde é claro: texto escuro contrasta */
+}
+
+.botao--secundario {
+  background: transparent;
+  border-color: var(--borda);
+  color: var(--marca-forte);
+}
+
+.botao--secundario:hover {
+  border-color: var(--destaque);
+  color: var(--destaque);
+}
+
+/* --- 4.3 Selos e chips ------------------------------------------------- */
+
+.selo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--e-2);
+  font-size: var(--texto-xs);
+  font-weight: 600;
+  padding: var(--e-1) var(--e-3);
+  border-radius: 999px;
+  background: var(--destaque-suave);
+  color: var(--destaque);
+}
+
+.selo__ponto {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  /* Pulso lento para indicar "estou disponível" sem ser chamativo */
+  animation: pulso 2.4s ease-in-out infinite;
+}
+
+@keyframes pulso {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.chip {
+  font-size: var(--texto-xs);
+  font-weight: 500;
+  padding: var(--e-1) var(--e-3);
+  border: 1px solid var(--borda);
+  border-radius: 999px;
+  color: var(--texto-suave);
+  background: var(--superficie);
+  text-decoration: none;
+}
+
+.chip--ativo,
+a.chip:hover {
+  border-color: var(--destaque);
+  color: var(--destaque);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap; /* no celular os chips quebram linha em vez de estourar */
+  gap: var(--e-2);
+}
+
+/* --- 4.4 Cards -------------------------------------------------------- */
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-3);
+  background: var(--superficie);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio);
+  padding: var(--e-6);
+  height: 100%;
+  transition: transform var(--transicao), box-shadow var(--transicao),
+    border-color var(--transicao);
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--sombra);
+  border-color: var(--destaque);
+}
+
+.card__topo {
+  /* Coluna invertida: o selo fica acima e o título usa a largura toda.
+     Assim o título não é comprimido pelo selo e para de quebrar em três
+     linhas nos nomes compridos. */
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: flex-start;
+  gap: var(--e-2);
+}
+
+.card__titulo {
+  font-size: var(--texto-lg);
+  margin: 0;
+}
+
+.card__titulo a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.card__resumo {
+  color: var(--texto-suave);
+  font-size: var(--texto-sm);
+  flex-grow: 1; /* empurra o rodapé do card para baixo e alinha a grade */
+}
+
+.card__rodape {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e-3);
+  padding-top: var(--e-3);
+  border-top: 1px solid var(--borda);
+  font-size: var(--texto-xs);
+  color: var(--texto-suave);
+}
+
+/* --- 4.5 Barra de habilidade ------------------------------------------ */
+
+.habilidade + .habilidade {
+  margin-top: var(--e-4);
+}
+
+.habilidade__topo {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--e-3);
+  font-size: var(--texto-sm);
+  font-weight: 600;
+  margin-bottom: var(--e-2);
+}
+
+.habilidade__nivel {
+  color: var(--texto-suave);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums; /* números alinhados na vertical */
+}
+
+.barra {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--superficie-2);
+  overflow: hidden;
+}
+
+[data-theme="dark"] .barra {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.barra__preenchimento {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--marca), var(--destaque));
+  /* Largura vem do style inline (valor do banco) e a animação é feita
+     pelo JS trocando de 0 para o valor real quando entra na tela. */
+  width: 0;
+  transition: width 900ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* --- 4.6 Formulário --------------------------------------------------- */
+
+.form {
+  display: grid;
+  gap: var(--e-4);
+}
+
+.form__linha {
+  display: grid;
+  gap: var(--e-4);
+  grid-template-columns: 1fr 1fr;
+}
+
+.form__campo {
+  display: grid;
+  gap: var(--e-2);
+}
+
+.form__campo label {
+  font-size: var(--texto-sm);
+  font-weight: 600;
+}
+
+.campo {
+  width: 100%;
+  font-family: inherit;
+  font-size: var(--texto-sm);
+  color: var(--texto);
+  background: var(--superficie);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-sm);
+  padding: var(--e-3) var(--e-4);
+  transition: border-color var(--transicao), box-shadow var(--transicao);
+}
+
+.campo:focus {
+  outline: none;
+  border-color: var(--destaque);
+  /* Anel de foco próprio, mais bonito que o padrão e igualmente visível */
+  box-shadow: 0 0 0 3px var(--destaque-suave);
+}
+
+.form__erro {
+  font-size: var(--texto-xs);
+  color: var(--azul-600);
+  font-weight: 600;
+}
+
+[data-theme="dark"] .form__erro {
+  color: var(--azul-300);
+}
+
+/* Mensagens de sucesso/erro vindas do framework de messages do Django */
+.aviso {
+  border: 1px solid var(--borda);
+  border-left: 3px solid var(--destaque);
+  background: var(--superficie);
+  border-radius: var(--raio-sm);
+  padding: var(--e-3) var(--e-4);
+  font-size: var(--texto-sm);
+  margin-bottom: var(--e-4);
+}
+
+.aviso--erro {
+  border-left-color: var(--azul-500);
+}
+
+/* --- 4.7 Rodapé ------------------------------------------------------- */
+
+.footer {
+  background: var(--azul-900);
+  color: #c7dcee;
+  padding-block: var(--e-12) var(--e-8);
+  margin-top: var(--e-16);
+}
+
+.footer a {
+  color: var(--verde-400);
+}
+
+.footer h3 {
+  color: #ffffff;
+  font-size: var(--texto-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  margin-bottom: var(--e-4);
+}
+
+.footer__grade {
+  display: grid;
+  gap: var(--e-8);
+  grid-template-columns: 1.4fr 1fr 1fr;
+}
+
+.footer__links {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: var(--e-2);
+  font-size: var(--texto-sm);
+}
+
+.footer__base {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--e-3);
+  margin-top: var(--e-10);
+  padding-top: var(--e-6);
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  font-size: var(--texto-xs);
+  color: #93b2ca;
+}
+
+/* =========================================================================
+   5. PÁGINAS
+   ========================================================================= */
+
+/* --- 5.1 Hero da home ------------------------------------------------- */
+
+.hero {
+  position: relative;
+  overflow: hidden;
+  padding-block: clamp(var(--e-16), 12vw, var(--e-24));
+}
+
+/* Malha de gradiente azul/verde no fundo. Uso pseudo-elemento para não
+   poluir o HTML com div decorativa. */
+.hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+      circle at 12% 18%,
+      color-mix(in srgb, var(--marca) 22%, transparent),
+      transparent 45%
+    ),
+    radial-gradient(
+      circle at 88% 8%,
+      color-mix(in srgb, var(--destaque) 20%, transparent),
+      transparent 42%
+    );
+  pointer-events: none; /* decoração não pode roubar clique */
+}
+
+.hero__interno {
+  position: relative;
+  display: grid;
+  gap: var(--e-12);
+  grid-template-columns: 1.25fr 0.75fr;
+  align-items: center;
+}
+
+.hero h1 {
+  margin-block: var(--e-4);
+}
+
+.hero__destaque {
+  /* Só o nome recebe o gradiente; o resto do título fica sólido */
+  background: linear-gradient(120deg, var(--marca), var(--destaque));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.hero__texto {
+  font-size: var(--texto-lg);
+  color: var(--texto-suave);
+  max-width: 46ch;
+}
+
+.hero__acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--e-3);
+  margin-top: var(--e-8);
+}
+
+.hero__numeros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--e-8);
+  margin-top: var(--e-12);
+  padding-top: var(--e-6);
+  border-top: 1px solid var(--borda);
+}
+
+.numero__valor {
+  font-family: var(--fonte-titulo);
+  font-size: var(--texto-xl);
+  color: var(--marca-forte);
+  line-height: 1;
+}
+
+.numero__rotulo {
+  font-size: var(--texto-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--texto-suave);
+}
+
+/* Cartão de código decorativo do hero, imitando um terminal */
+.terminal {
+  background: var(--azul-900);
+  border: 1px solid var(--azul-700);
+  border-radius: var(--raio);
+  box-shadow: var(--sombra);
+  overflow: hidden;
+  font-family: var(--fonte-mono);
+  font-size: var(--texto-xs);
+}
+
+.terminal__topo {
+  display: flex;
+  align-items: center;
+  gap: var(--e-2);
+  padding: var(--e-3) var(--e-4);
+  background: var(--azul-800);
+  color: #9db6cc;
+}
+
+.terminal__bolinha {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--azul-600);
+}
+
+.terminal__bolinha--verde {
+  background: var(--verde-500);
+}
+
+.terminal__corpo {
+  padding: var(--e-4);
+  color: #cfe4f3;
+  line-height: 1.9;
+  white-space: pre-wrap; /* mantém a indentação do código de exemplo */
+}
+
+.terminal__chave {
+  color: var(--verde-400);
+}
+
+.terminal__valor {
+  color: var(--azul-300);
+}
+
+/* --- 5.2 Sobre ------------------------------------------------------- */
+
+.sobre {
+  display: grid;
+  gap: var(--e-12);
+  grid-template-columns: 1fr 1fr;
+  align-items: start;
+}
+
+.sobre__texto p + p {
+  margin-top: var(--e-4);
+}
+
+.lista-info {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: var(--e-3);
+  font-size: var(--texto-sm);
+}
+
+.lista-info li {
+  display: flex;
+  gap: var(--e-3);
+  padding-bottom: var(--e-3);
+  border-bottom: 1px solid var(--borda);
+}
+
+.lista-info strong {
+  min-width: 92px;
+  color: var(--texto-suave);
+  font-weight: 600;
+}
+
+/* --- 5.3 Detalhe do projeto ------------------------------------------ */
+
+.projeto-detalhe {
+  display: grid;
+  gap: var(--e-12);
+  grid-template-columns: 1.6fr 0.9fr;
+  align-items: start;
+}
+
+.projeto-detalhe__conteudo p + p {
+  margin-top: var(--e-4);
+}
+
+.painel {
+  background: var(--superficie);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio);
+  padding: var(--e-6);
+  position: sticky;
+  top: 96px; /* fica visível durante a leitura no desktop */
+}
+
+.migalhas {
+  font-size: var(--texto-xs);
+  color: var(--texto-suave);
+  margin-bottom: var(--e-4);
+}
+
+/* --- 5.4 Documentação ------------------------------------------------ */
+
+.doc {
+  display: grid;
+  gap: var(--e-12);
+  grid-template-columns: 240px 1fr;
+  align-items: start;
+}
+
+.doc__indice {
+  position: sticky;
+  top: 96px;
+  font-size: var(--texto-sm);
+}
+
+.doc__indice ol {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: var(--e-2);
+  counter-reset: item;
+}
+
+.doc__indice a {
+  color: var(--texto-suave);
+  text-decoration: none;
+}
+
+.doc__indice a:hover {
+  color: var(--destaque);
+}
+
+.doc__conteudo h2 {
+  margin-top: var(--e-12);
+  padding-top: var(--e-6);
+  border-top: 1px solid var(--borda);
+}
+
+.doc__conteudo h2:first-child {
+  margin-top: 0;
+  border-top: 0;
+  padding-top: 0;
+}
+
+.doc__conteudo h3 {
+  margin-top: var(--e-8);
+}
+
+.doc__conteudo p,
+.doc__conteudo ul,
+.doc__conteudo pre,
+.doc__conteudo table {
+  margin-top: var(--e-4);
+}
+
+.doc__conteudo ul {
+  padding-left: var(--e-6);
+  display: grid;
+  gap: var(--e-2);
+}
+
+.tabela {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--texto-sm);
+  display: block;
+  overflow-x: auto; /* tabela rola no celular em vez de quebrar o layout */
+}
+
+.tabela th,
+.tabela td {
+  text-align: left;
+  padding: var(--e-3);
+  border-bottom: 1px solid var(--borda);
+  vertical-align: top;
+}
+
+.tabela th {
+  color: var(--marca-forte);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* --- 5.5 Paginação e estado vazio ------------------------------------ */
+
+.paginacao {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--e-3);
+  margin-top: var(--e-12);
+  font-size: var(--texto-sm);
+}
+
+.vazio {
+  text-align: center;
+  padding: var(--e-16) var(--e-4);
+  border: 1px dashed var(--borda);
+  border-radius: var(--raio);
+  color: var(--texto-suave);
+}
+
+.pagina-erro {
+  display: grid;
+  place-items: center;
+  text-align: center;
+  gap: var(--e-4);
+  min-height: 60vh;
+  padding-block: var(--e-16);
+}
+
+.pagina-erro__codigo {
+  font-family: var(--fonte-mono);
+  font-size: var(--texto-2xl);
+  color: var(--destaque);
+}
+
+/* =========================================================================
+   6. RESPONSIVO
+   ========================================================================= */
+
+/* Tablet: quebro as grades de duas colunas */
+@media (max-width: 900px) {
+  .hero__interno,
+  .sobre,
+  .projeto-detalhe,
+  .doc,
+  .footer__grade {
+    grid-template-columns: 1fr;
+  }
+
+  .painel,
+  .doc__indice {
+    position: static; /* sticky não faz sentido em coluna única */
+  }
+
+  .doc__indice {
+    border-bottom: 1px solid var(--borda);
+    padding-bottom: var(--e-6);
+  }
+}
+
+/* Celular: menu vira gaveta e o formulário fica em uma coluna */
+@media (max-width: 720px) {
+  .botao-menu {
+    display: grid; /* aqui o botão do menu aparece */
+  }
+
+  .nav {
+    /* Fechado por padrão. O JS troca o atributo data-aberto no header. */
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    background: var(--superficie);
+    border-bottom: 1px solid var(--borda);
+    box-shadow: var(--sombra);
+    padding: var(--e-2) clamp(var(--e-4), 4vw, var(--e-8)) var(--e-4);
+  }
+
+  .header[data-aberto="true"] .nav {
+    display: flex;
+  }
+
+  .nav__link {
+    padding-block: var(--e-3);
+    border-bottom: 1px solid var(--borda);
+  }
+
+  .nav__link:last-child {
+    border-bottom: 0;
+  }
+
+  .form__linha {
+    grid-template-columns: 1fr;
+  }
+
+  .hero__numeros {
+    gap: var(--e-6);
+  }
+
+  .botao {
+    width: 100%; /* alvo de toque generoso no celular */
+  }
+
+  .hero__acoes .botao {
+    width: auto;
+    flex: 1 1 auto;
+  }
+}
+
+/* =========================================================================
+   7. ACESSIBILIDADE
+   ========================================================================= */
+
+/* Foco visível para quem navega por teclado — nunca removo outline sem
+   colocar algo equivalente no lugar. */
+:focus-visible {
+  outline: 2px solid var(--destaque);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* Link "pular para o conteúdo": invisível até receber foco */
+.pular {
+  position: absolute;
+  left: var(--e-4);
+  top: -60px;
+  z-index: 100;
+  background: var(--destaque);
+  color: #fff;
+  padding: var(--e-2) var(--e-4);
+  border-radius: var(--raio-sm);
+  transition: top var(--transicao);
+}
+
+.pular:focus {
+  top: var(--e-4);
+}
+
+/* Respeito quem pediu menos animação no sistema operacional */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Revelação suave dos blocos ao entrar na tela.
+   Ponto importante: só escondo o elemento se a classe .js estiver no <html>
+   (marcada por um script inline no base.html). Se o JavaScript estiver
+   desativado ou falhar, o conteúdo aparece normalmente em vez de ficar
+   invisível para sempre. */
+.js .revelar {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 600ms ease, transform 600ms ease;
+}
+
+.js .revelar.visivel {
+  opacity: 1;
+  transform: none;
+}

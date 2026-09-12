@@ -1,0 +1,62 @@
+{% comment %} ==========================================================================
+   header.html — logo, navegação, botão de tema e menu mobile
+   ==========================================================================
+   Os atributos data-* (data-header, data-menu-toggle, data-tema-toggle) são
+   os "ganchos" que o meu JavaScript usa. Eu nunca uso classe de CSS como
+   seletor de JS: se um dia eu renomear a classe por estilo, o script continua
+   funcionando.
+   ========================================================================== {% endcomment %}
+<header class="header" data-header data-aberto="false">
+  <div class="container header__interno">
+    {% comment %} --- Logo: SVG inline, desenhado por mim ---------------------------
+       Inline (e não <img>) por dois motivos: não gera requisição extra e
+       herda a cor do tema via currentColor. {% endcomment %}
+    <a class="logo" href="{% url 'portfolio:home' %}" aria-label="Ir para a página inicial">
+      <svg width="30" height="30" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+        {# Losango: a "moldura" da marca #}
+        <path d="M16 2 L30 16 L16 30 L2 16 Z" stroke="currentColor" stroke-width="2" />
+        {# Chevron interno, referência ao símbolo de código #}
+        <path d="M12 12 L8 16 L12 20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+        <path d="M18 11 L22 16 L18 21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+      <span>{{ perfil.nome|default:"Portfólio" }}</span>
+    </a>
+
+    {% comment %} --- Navegação -----------------------------------------------------
+       No desktop é uma linha; no celular o CSS transforma em gaveta. {% endcomment %}
+    <nav class="nav" aria-label="Navegação principal">
+      <a class="nav__link" href="{% url 'portfolio:home' %}#sobre">Sobre</a>
+      <a class="nav__link" href="{% url 'portfolio:home' %}#stack">Stack</a>
+      <a class="nav__link" href="{% url 'portfolio:projetos' %}">Projetos</a>
+      <a class="nav__link" href="{% url 'portfolio:documentacao' %}">Documentação</a>
+      <a class="nav__link" href="{% url 'portfolio:contato' %}">Contato</a>
+    </nav>
+
+    <div class="header__acoes">
+      {# --- Botão de tema claro/escuro --------------------------------- #}
+      <button class="botao-icone" type="button" data-tema-toggle aria-label="Alternar tema">
+        {# Mostro um ícone por vez; o JS controla o atributo hidden. #}
+        <svg data-icone-lua width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
+        </svg>
+        <svg data-icone-sol width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true" hidden>
+          <circle cx="12" cy="12" r="4.5" stroke="currentColor" stroke-width="1.8" />
+          <path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5 19 19M19 5l-1.5 1.5M6.5 17.5 5 19" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+        </svg>
+      </button>
+
+      {# --- Botão do menu mobile (escondido no desktop pelo CSS) ------- #}
+      <button
+        class="botao-icone botao-menu"
+        type="button"
+        data-menu-toggle
+        aria-expanded="false"
+        aria-label="Abrir menu"
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+        </svg>
+      </button>
+    </div>
+  </div>
+</header>

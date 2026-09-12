@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% comment %} ==========================================================================
+   contato.html — página dedicada do formulário
+   ==========================================================================
+   Aqui eu renderizo os campos um por um (em vez de {{ form }}) para ter
+   controle total do HTML e mostrar o erro logo abaixo do campo certo.
+   ========================================================================== {% endcomment %}
+
+{% block titulo %}Contato — {{ perfil.nome }}{% endblock %}
+{% block descricao %}Fale comigo sobre projetos, vagas ou parcerias.{% endblock %}
+
+{% block conteudo %}
+<section class="secao">
+  <div class="container">
+    <div class="secao__cabecalho">
+      <span class="rotulo">Contato</span>
+      <h1>Me manda uma mensagem</h1>
+      <p class="texto-suave" style="margin-top: var(--e-4)">
+        Preencho e envio: a mensagem cai direto no painel do site e eu recebo o aviso.
+      </p>
+    </div>
+
+    <div class="sobre">
+      <form class="form card" method="post" novalidate>
+        {% comment %} csrf_token é obrigatório em todo POST no Django — é o que protege
+           o formulário contra requisição forjada de outro site. {% endcomment %}
+        {% csrf_token %}
+
+        {# Erros que não pertencem a um campo específico #}
+        {% if form.non_field_errors %}
+          <p class="aviso aviso--erro">{{ form.non_field_errors }}</p>
+        {% endif %}
+
+        <div class="form__linha">
+          <div class="form__campo">
+            <label for="{{ form.nome.id_for_label }}">Nome</label>
+            {{ form.nome }}
+            {% for erro in form.nome.errors %}<span class="form__erro">{{ erro }}</span>{% endfor %}
+          </div>
+          <div class="form__campo">
+            <label for="{{ form.email.id_for_label }}">E-mail</label>
+            {{ form.email }}
+            {% for erro in form.email.errors %}<span class="form__erro">{{ erro }}</span>{% endfor %}
+          </div>
+        </div>
+
+        <div class="form__campo">
+          <label for="{{ form.assunto.id_for_label }}">Assunto</label>
+          {{ form.assunto }}
+          {% for erro in form.assunto.errors %}<span class="form__erro">{{ erro }}</span>{% endfor %}
+        </div>
+
+        <div class="form__campo">
+          <label for="{{ form.conteudo.id_for_label }}">Mensagem</label>
+          {{ form.conteudo }}
+          {% for erro in form.conteudo.errors %}<span class="form__erro">{{ erro }}</span>{% endfor %}
+        </div>
+
+        {{ form.website }}{# honeypot: campo escondido contra robô #}
+
+        <button class="botao botao--principal" type="submit">Enviar mensagem</button>
+        <p class="texto-suave" style="font-size: var(--texto-xs)">
+          Seus dados ficam apenas no banco deste site e servem só para eu responder.
+        </p>
+      </form>
+
+      <div>
+        <h3>Outros canais</h3>
+        <ul class="lista-info" style="margin-top: var(--e-4)">
+          {% if perfil.email %}
+            <li><strong>E-mail</strong> <a href="mailto:{{ perfil.email }}">{{ perfil.email }}</a></li>
+          {% endif %}
+          {% if perfil.github %}
+            <li><strong>GitHub</strong> <a href="{{ perfil.github }}" target="_blank" rel="noopener">github.com/JuniorSilva88</a></li>
+          {% endif %}
+          {% if perfil.cidade %}<li><strong>Local</strong> <span>{{ perfil.cidade }}</span></li>{% endif %}
+          <li><strong>Idiomas</strong> <span>Português (nativo)</span></li>
+        </ul>
+
+        <p class="texto-suave" style="margin-top: var(--e-6)">
+          Prefere ver o código antes de conversar? Todos os meus repositórios estão
+          abertos no GitHub, incluindo o deste portfólio.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

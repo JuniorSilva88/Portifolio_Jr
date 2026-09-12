@@ -1,0 +1,245 @@
+{% extends "base.html" %}
+{% comment %} ==========================================================================
+   documentacao.html — documentação técnica do projeto, dentro do site
+   ==========================================================================
+   Escrevi esta página como se fosse o README, mas navegável: quem avalia o
+   portfólio consegue entender a arquitetura sem clonar o repositório.
+   Onde eu mostro código de template, uso a tag verbatim para o Django
+   imprimir as chaves em vez de tentar executá-las.
+   ========================================================================== {% endcomment %}
+
+{% block titulo %}Documentação técnica — {{ perfil.nome }}{% endblock %}
+{% block descricao %}Arquitetura, estrutura de pastas, comandos e guia de deploy no Render e na Vercel deste portfólio em Django.{% endblock %}
+
+{% block conteudo %}
+<section class="secao">
+  <div class="container">
+    <div class="secao__cabecalho">
+      <span class="rotulo">Documentação</span>
+      <h1>Como este portfólio foi construído</h1>
+      <p class="texto-suave" style="margin-top: var(--e-4)">
+        Projeto em Python + Django, com deploy no Render (aplicação completa) e
+        na Vercel (função serverless). Abaixo está tudo o que alguém precisa
+        para rodar, entender e publicar este site.
+      </p>
+    </div>
+
+    <div class="doc">
+      {# --- Índice lateral (sticky no desktop) ----------------------------- #}
+      <nav class="doc__indice" aria-label="Índice da documentação">
+        <ol>
+          <li><a href="#stack-tecnica">1. Stack técnica</a></li>
+          <li><a href="#estrutura">2. Estrutura de pastas</a></li>
+          <li><a href="#modelos">3. Modelos de dados</a></li>
+          <li><a href="#rotas">4. Rotas</a></li>
+          <li><a href="#rodar-local">5. Rodando localmente</a></li>
+          <li><a href="#variaveis">6. Variáveis de ambiente</a></li>
+          <li><a href="#deploy-render">7. Deploy no Render</a></li>
+          <li><a href="#deploy-vercel">8. Deploy na Vercel</a></li>
+          <li><a href="#boas-praticas">9. Boas práticas aplicadas</a></li>
+          <li><a href="#testes">10. Testes</a></li>
+        </ol>
+      </nav>
+
+      <div class="doc__conteudo">
+        {# ================= 1 ============================================= #}
+        <h2 id="stack-tecnica">1. Stack técnica</h2>
+        <table class="tabela">
+          <thead>
+            <tr><th>Camada</th><th>Tecnologia</th><th>Por que eu escolhi</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Back-end</td><td>Python 3.12 + Django 5/6</td><td>Admin pronto, ORM maduro e segurança por padrão</td></tr>
+            <tr><td>Banco (dev)</td><td>SQLite</td><td>Zero configuração para desenvolver</td></tr>
+            <tr><td>Banco (prod)</td><td>PostgreSQL via <code>dj-database-url</code></td><td>Troco de banco só mudando a variável <code>DATABASE_URL</code></td></tr>
+            <tr><td>Front-end</td><td>HTML5, CSS3 e JavaScript puro</td><td>Site pequeno: framework só adicionaria peso</td></tr>
+            <tr><td>Estáticos</td><td>WhiteNoise</td><td>Serve CSS/JS comprimido sem eu precisar de Nginx ou CDN</td></tr>
+            <tr><td>Servidor</td><td>Gunicorn</td><td>Padrão de produção para WSGI</td></tr>
+            <tr><td>Hospedagem</td><td>Render e Vercel</td><td>Render roda a aplicação completa; Vercel roda como função serverless</td></tr>
+          </tbody>
+        </table>
+
+        {# ================= 2 ============================================= #}
+        <h2 id="estrutura">2. Estrutura de pastas</h2>
+        <p>
+          Separei configuração (<code>config/</code>) de aplicação
+          (<code>portfolio/</code>). É o padrão que o próprio Django recomenda e
+          facilita muito plugar um segundo app depois (um blog, por exemplo).
+        </p>
+        <pre><code>portfolio-django/
+├── config/                 # configuração do projeto
+│   ├── settings.py         # tudo por variável de ambiente
+│   ├── urls.py             # rotas raiz + health check
+│   ├── wsgi.py             # entrada usada por Gunicorn e Vercel
+│   └── asgi.py
+├── portfolio/              # meu app
+│   ├── models.py           # Perfil, Habilidade, Projeto, Mensagem
+│   ├── views.py            # Class-Based Views
+│   ├── forms.py            # formulário de contato + honeypot
+│   ├── urls.py             # rotas do app (namespace "portfolio")
+│   ├── admin.py            # painel de conteúdo
+│   ├── context_processors.py
+│   ├── tests.py            # testes automatizados
+│   └── management/commands/carregar_dados.py
+├── templates/              # HTML (base + páginas + partials)
+├── static/                 # CSS, JS, imagens
+├── docs/                   # README, ARQUITETURA, DEPLOY
+├── api/index.py            # entrada serverless da Vercel
+├── build_files.sh          # build da Vercel (collectstatic)
+├── vercel.json             # roteamento da Vercel
+├── render.yaml             # infraestrutura como código no Render
+├── requirements.txt
+└── manage.py</code></pre>
+
+        {# ================= 3 ============================================= #}
+        <h2 id="modelos">3. Modelos de dados</h2>
+        <p>Quatro modelos, cada um espelhando uma parte visível do site:</p>
+        <ul>
+          <li><strong>Perfil</strong> — meus dados (hero, sobre, links). Tabela de uma linha só; o admin bloqueia a criação de um segundo perfil.</li>
+          <li><strong>Habilidade</strong> — tecnologia com categoria, nível (0–100) e ordem de exibição.</li>
+          <li><strong>Projeto</strong> — título, slug único, resumo, descrição, linguagem, tecnologias, links e as flags <code>publicado</code> e <code>destaque</code>.</li>
+          <li><strong>Mensagem</strong> — o que chega pelo formulário de contato, somente leitura no admin.</li>
+        </ul>
+        <p>
+          Criei um QuerySet próprio com <code>publicados()</code> e
+          <code>destaques()</code> para não repetir o mesmo filtro em cada view:
+        </p>
+        <pre><code>class Publicado(models.QuerySet):
+    def publicados(self):
+        return self.filter(publicado=True)
+
+    def destaques(self):
+        return self.publicados().filter(destaque=True)
+
+
+class Projeto(models.Model):
+    # ...
+    objects = Publicado.as_manager()   # Projeto.objects.destaques()</code></pre>
+
+        {# ================= 4 ============================================= #}
+        <h2 id="rotas">4. Rotas</h2>
+        <table class="tabela">
+          <thead><tr><th>URL</th><th>View</th><th>O que faz</th></tr></thead>
+          <tbody>
+            <tr><td><code>/</code></td><td>HomeView</td><td>Hero, sobre, stack, destaques e contato</td></tr>
+            <tr><td><code>/projetos/</code></td><td>ProjetoListView</td><td>Lista com busca, filtro e paginação</td></tr>
+            <tr><td><code>/projetos/&lt;slug&gt;/</code></td><td>ProjetoDetailView</td><td>Detalhe do projeto + relacionados</td></tr>
+            <tr><td><code>/contato/</code></td><td>ContatoView</td><td>Formulário (POST → redirect → mensagem)</td></tr>
+            <tr><td><code>/documentacao/</code></td><td>DocumentacaoView</td><td>Esta página</td></tr>
+            <tr><td><code>/admin/</code></td><td>Django admin</td><td>Painel para eu editar o conteúdo</td></tr>
+            <tr><td><code>/healthz/</code></td><td>health</td><td>JSON <code>{"status": "ok"}</code> para monitoramento</td></tr>
+          </tbody>
+        </table>
+        <p>
+          Uso namespace nas rotas, então nos templates eu escrevo
+          {% verbatim %}<code>{% url 'portfolio:projetos' %}</code>{% endverbatim %}
+          em vez de digitar o caminho na mão — se a URL mudar, os links continuam certos.
+        </p>
+
+        {# ================= 5 ============================================= #}
+        <h2 id="rodar-local">5. Rodando localmente</h2>
+        <pre><code># 1. clonar e entrar na pasta
+git clone https://github.com/JuniorSilva88/portfolio-django.git
+cd portfolio-django
+
+# 2. ambiente virtual
+python -m venv .venv
+source .venv/bin/activate        # no Windows: .venv\Scripts\activate
+
+# 3. dependências
+pip install -r requirements.txt
+
+# 4. banco e conteúdo
+python manage.py migrate
+python manage.py carregar_dados          # popula perfil, stack e projetos
+python manage.py createsuperuser         # acesso ao /admin
+
+# 5. subir
+python manage.py runserver
+# http://127.0.0.1:8000</code></pre>
+        <p>
+          O comando <code>carregar_dados</code> aceita <code>--github</code> para
+          importar meus repositórios ao vivo da API pública do GitHub, e
+          <code>--limpar</code> para recriar o conteúdo do zero. Ele é idempotente
+          (usa <code>update_or_create</code>), então rodar duas vezes não duplica nada.
+        </p>
+
+        {# ================= 6 ============================================= #}
+        <h2 id="variaveis">6. Variáveis de ambiente</h2>
+        <p>Nada de segredo dentro do código. Local eu uso <code>.env</code>; em produção, o painel da plataforma.</p>
+        <table class="tabela">
+          <thead><tr><th>Variável</th><th>Exemplo</th><th>Para que serve</th></tr></thead>
+          <tbody>
+            <tr><td><code>SECRET_KEY</code></td><td>string longa aleatória</td><td>Assinatura de sessão e CSRF. Obrigatória em produção.</td></tr>
+            <tr><td><code>DEBUG</code></td><td><code>False</code></td><td>Em produção sempre False.</td></tr>
+            <tr><td><code>ALLOWED_HOSTS</code></td><td><code>meusite.onrender.com</code></td><td>Domínios que podem servir o site.</td></tr>
+            <tr><td><code>DATABASE_URL</code></td><td><code>postgres://...</code></td><td>Se ausente, cai no SQLite local.</td></tr>
+            <tr><td><code>CSRF_TRUSTED_ORIGINS</code></td><td><code>https://meusite.onrender.com</code></td><td>Origens confiáveis para POST via HTTPS.</td></tr>
+          </tbody>
+        </table>
+
+        {# ================= 7 ============================================= #}
+        <h2 id="deploy-render">7. Deploy no Render</h2>
+        <p>
+          No Render eu rodo a aplicação inteira (com banco Postgres e admin
+          funcionando). O arquivo <code>render.yaml</code> já descreve o serviço,
+          então dá para usar o modo Blueprint e não configurar nada na mão.
+        </p>
+        <pre><code># Build Command
+pip install -r requirements.txt &amp;&amp; python manage.py collectstatic --noinput &amp;&amp; python manage.py migrate
+
+# Start Command
+gunicorn config.wsgi:application --bind 0.0.0.0:$PORT
+
+# Health Check Path
+/healthz</code></pre>
+        <ul>
+          <li>Crio um Postgres no Render e ligo a <code>DATABASE_URL</code> no serviço web.</li>
+          <li>Defino <code>SECRET_KEY</code>, <code>DEBUG=False</code> e <code>ALLOWED_HOSTS</code>.</li>
+          <li>Depois do primeiro deploy, rodo <code>python manage.py carregar_dados</code> no Shell do Render para popular o conteúdo.</li>
+        </ul>
+
+        {# ================= 8 ============================================= #}
+        <h2 id="deploy-vercel">8. Deploy na Vercel</h2>
+        <p>
+          Na Vercel o Django roda como função serverless Python: o
+          <code>vercel.json</code> manda todo o tráfego para
+          <code>api/index.py</code>, que apenas expõe o WSGI do projeto.
+        </p>
+        <pre><code># api/index.py
+from config.wsgi import application
+app = application          # a Vercel procura por "app"</code></pre>
+        <p>Dois pontos que eu documento porque já me pegaram:</p>
+        <ul>
+          <li>O sistema de arquivos é somente leitura — <strong>SQLite não funciona</strong>. Na Vercel eu aponto <code>DATABASE_URL</code> para um Postgres gerenciado (Neon, Supabase ou o próprio Render).</li>
+          <li>Sem banco de escrita, o formulário de contato e o admin não gravam. Por isso trato a Vercel como vitrine e o Render como ambiente completo.</li>
+        </ul>
+
+        {# ================= 9 ============================================= #}
+        <h2 id="boas-praticas">9. Boas práticas aplicadas</h2>
+        <ul>
+          <li><strong>Configuração por ambiente</strong>: o mesmo código roda local, no Render e na Vercel só trocando variáveis.</li>
+          <li><strong>Segurança</strong>: com <code>DEBUG=False</code> eu ligo HSTS, cookies seguros, redirect para HTTPS, <code>nosniff</code> e proteção de clickjacking. CSRF em todo formulário.</li>
+          <li><strong>Templates sem repetição</strong>: um <code>base.html</code>, partials para header/footer/card.</li>
+          <li><strong>Sem consulta duplicada</strong>: filtros ficam no QuerySet do modelo e dados globais no context processor.</li>
+          <li><strong>Acessibilidade</strong>: HTML semântico, <code>aria-label</code> nos botões de ícone, foco visível, link "pular para o conteúdo", contraste conferido e respeito a <code>prefers-reduced-motion</code>.</li>
+          <li><strong>Responsividade</strong>: <code>clamp()</code> na tipografia e no espaçamento, grade automática com <code>auto-fill</code> e apenas dois breakpoints.</li>
+          <li><strong>Performance</strong>: CSS e JS comprimidos com hash no nome, JS com <code>defer</code>, animação por <code>IntersectionObserver</code> em vez de evento de scroll.</li>
+          <li><strong>Conteúdo editável</strong>: tudo pelo admin, sem novo deploy para trocar um texto.</li>
+          <li><strong>Código comentado</strong>: cada arquivo explica a decisão, não só o que a linha faz.</li>
+        </ul>
+
+        {# ================= 10 ============================================ #}
+        <h2 id="testes">10. Testes</h2>
+        <p>Cobri o essencial: modelos, views, filtros e o formulário de contato.</p>
+        <pre><code>python manage.py test          # roda toda a suíte
+python manage.py check --deploy  # checklist de segurança para produção</code></pre>
+        <p>
+          O <code>check --deploy</code> é o meu último passo antes de publicar: ele
+          avisa se ficou alguma configuração insegura para produção.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

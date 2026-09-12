@@ -1,0 +1,43 @@
+{% comment %} ==========================================================================
+   footer.html — rodapé com links, contato e créditos
+   ==========================================================================
+   O ano vem do meu context processor (ano_atual), então nunca fica velho.
+   ========================================================================== {% endcomment %}
+<footer class="footer">
+  <div class="container">
+    <div class="footer__grade">
+      <div>
+        <h3>{{ perfil.nome|default:"Portfólio" }}</h3>
+        <p style="font-size: var(--texto-sm); max-width: 34ch">
+          {{ perfil.resumo|default:"Portfólio de projetos em Python e Django." }}
+        </p>
+      </div>
+
+      <div>
+        <h3>Navegar</h3>
+        <ul class="footer__links">
+          <li><a href="{% url 'portfolio:home' %}">Início</a></li>
+          <li><a href="{% url 'portfolio:projetos' %}">Projetos</a></li>
+          <li><a href="{% url 'portfolio:documentacao' %}">Documentação</a></li>
+          <li><a href="{% url 'portfolio:contato' %}">Contato</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h3>Onde me encontrar</h3>
+        <ul class="footer__links">
+          {# Só mostro o item se o dado existir no perfil — nada de link vazio #}
+          {% if perfil.github %}<li><a href="{{ perfil.github }}" rel="noopener" target="_blank">GitHub</a></li>{% endif %}
+          {% if perfil.linkedin %}<li><a href="{{ perfil.linkedin }}" rel="noopener" target="_blank">LinkedIn</a></li>{% endif %}
+          {% if perfil.email %}<li><a href="mailto:{{ perfil.email }}">{{ perfil.email }}</a></li>{% endif %}
+          {% if perfil.cidade %}<li>{{ perfil.cidade }}</li>{% endif %}
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer__base">
+      <span>&copy; {{ ano_atual }} {{ perfil.nome|default:"Portfólio" }}. Todos os direitos reservados.</span>
+      <span>Feito com Python e Django &middot; hospedado no Render e na Vercel</span>
+    </div>
+  </div>
+</footer>

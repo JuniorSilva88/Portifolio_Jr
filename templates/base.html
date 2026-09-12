@@ -1,0 +1,88 @@
+{% load static %}<!DOCTYPE html>
+{% comment %} ==========================================================================
+   base.html — esqueleto de todas as páginas
+   ==========================================================================
+   Todo template do site faz {% extends "base.html" %} e preenche só os
+   blocos que precisa. Assim o header, o rodapé, as fontes e as metatags
+   ficam em um lugar só: se eu mudar algo aqui, muda no site inteiro.
+
+   Blocos disponíveis:
+     titulo    -> texto da aba do navegador
+     descricao -> meta description da página
+     conteudo  -> o corpo da página (obrigatório)
+     scripts   -> JS extra que só aquela página usa
+   ========================================================================== {% endcomment %}
+<html lang="pt-BR" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    {# viewport: é isto que faz o layout responsivo funcionar no celular #}
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light dark" />
+
+    <title>{% block titulo %}{{ perfil.nome|default:"Portfólio" }}{% endblock %}</title>
+    <meta
+      name="description"
+      content="{% block descricao %}Portfólio de {{ perfil.nome|default:'desenvolvedor' }} — projetos em Python, Django e front-end.{% endblock %}"
+    />
+    <meta name="author" content="{{ perfil.nome }}" />
+
+    {# Open Graph: controla como o link aparece quando é compartilhado #}
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="{{ perfil.nome }} — {{ perfil.titulo }}" />
+    <meta property="og:description" content="{{ perfil.resumo }}" />
+    <meta property="og:locale" content="pt_BR" />
+
+    {# Favicon em SVG: um arquivo só, nítido em qualquer tamanho de tela #}
+    <link rel="icon" type="image/svg+xml" href="{% static 'img/favicon.svg' %}" />
+
+    {% comment %} Fontes da Fontshare: Cabinet Grotesk nos títulos, Satoshi no texto.
+       preconnect adiantado para o navegador abrir a conexão antes de
+       precisar do arquivo (ganho real de alguns milissegundos). {% endcomment %}
+    <link rel="preconnect" href="https://api.fontshare.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@700,800&f[]=satoshi@400,500,700&f[]=jetbrains-mono@400&display=swap"
+    />
+
+    {% comment %} Minha folha de estilo. Com WhiteNoise + ManifestStorage, em produção
+       o {% static %} devolve o nome com hash e o cache nunca serve versão
+       antiga por engano. {% endcomment %}
+    <link rel="stylesheet" href="{% static 'css/main.css' %}" />
+  </head>
+
+  <body>
+    <script>
+      // Marco que o JavaScript está ativo antes de qualquer coisa aparecer.
+      // O CSS usa essa classe para decidir se pode esconder os blocos que
+      // entram com animação — sem JS, nada fica invisível.
+      document.documentElement.classList.add("js");
+    </script>
+
+    {# Link de acessibilidade: só aparece quando recebe foco pelo teclado #}
+    <a class="pular" href="#conteudo">Pular para o conteúdo</a>
+
+    {% include "portfolio/partials/header.html" %}
+
+    <main id="conteudo">
+      {# Mensagens de sucesso/erro (framework messages do Django) #}
+      {% if messages %}
+        <div class="container" style="padding-top: var(--e-6)">
+          {% for mensagem in messages %}
+            <p class="aviso {% if mensagem.tags == 'error' %}aviso--erro{% endif %}">
+              {{ mensagem }}
+            </p>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      {% block conteudo %}{% endblock %}
+    </main>
+
+    {% include "portfolio/partials/footer.html" %}
+
+    {% comment %} defer: o navegador baixa o script em paralelo e executa só depois de
+       montar o HTML — a página aparece mais rápido. {% endcomment %}
+    <script src="{% static 'js/main.js' %}" defer></script>
+    {% block scripts %}{% endblock %}
+  </body>
+</html>

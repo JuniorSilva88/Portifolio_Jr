@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% comment %} ==========================================================================
+   projeto_detalhe.html — página de um projeto
+   ==========================================================================
+   O objeto "projeto" vem da DetailView, buscado pelo slug da URL. Texto
+   longo à esquerda, painel com metadados e links à direita (sticky no
+   desktop, empilhado no celular).
+   ========================================================================== {% endcomment %}
+
+{% block titulo %}{{ projeto.titulo }} — {{ perfil.nome }}{% endblock %}
+{% block descricao %}{{ projeto.resumo }}{% endblock %}
+
+{% block conteudo %}
+<section class="secao">
+  <div class="container">
+    {# Trilha de navegação: ajuda o visitante a saber onde está #}
+    <nav class="migalhas" aria-label="Você está em">
+      <a href="{% url 'portfolio:home' %}">Início</a> /
+      <a href="{% url 'portfolio:projetos' %}">Projetos</a> /
+      <span>{{ projeto.titulo }}</span>
+    </nav>
+
+    <div class="secao__cabecalho">
+      <span class="rotulo">{{ projeto.linguagem|default:"Projeto" }}</span>
+      <h1>{{ projeto.titulo }}</h1>
+      <p class="texto-suave" style="margin-top: var(--e-4)">{{ projeto.resumo }}</p>
+    </div>
+
+    <div class="projeto-detalhe">
+      <div class="projeto-detalhe__conteudo">
+        {% comment %} linebreaks converte as quebras de linha do banco em <p>/<br>,
+           com escape automático (sem risco de HTML injetado). {% endcomment %}
+        {{ projeto.descricao|linebreaks }}
+
+        {% if projeto.lista_tecnologias %}
+          <h3 style="margin-top: var(--e-8)">Tecnologias usadas</h3>
+          <div class="chips" style="margin-top: var(--e-4)">
+            {% for tec in projeto.lista_tecnologias %}
+              <span class="chip">{{ tec }}</span>
+            {% endfor %}
+          </div>
+        {% endif %}
+      </div>
+
+      <aside class="painel">
+        <h3 style="font-size: var(--texto-sm); text-transform: uppercase; letter-spacing: .1em">
+          Ficha do projeto
+        </h3>
+        <ul class="lista-info" style="margin-top: var(--e-4)">
+          {% if projeto.linguagem %}<li><strong>Linguagem</strong> <span>{{ projeto.linguagem }}</span></li>{% endif %}
+          {% if projeto.ano %}<li><strong>Ano</strong> <span>{{ projeto.ano }}</span></li>{% endif %}
+          <li><strong>Autor</strong> <span>{{ perfil.nome }}</span></li>
+        </ul>
+
+        <div style="display: grid; gap: var(--e-3); margin-top: var(--e-6)">
+          {% if projeto.repositorio %}
+            <a class="botao botao--principal" href="{{ projeto.repositorio }}" target="_blank" rel="noopener">
+              Ver código no GitHub
+            </a>
+          {% endif %}
+          {% if projeto.demo %}
+            <a class="botao botao--secundario" href="{{ projeto.demo }}" target="_blank" rel="noopener">
+              Abrir site publicado
+            </a>
+          {% endif %}
+        </div>
+      </aside>
+    </div>
+
+    {# --- Projetos relacionados (mesma linguagem, quando houver) --------- #}
+    {% if relacionados %}
+      <div style="margin-top: var(--e-16)">
+        <h2 style="margin-bottom: var(--e-6)">Outros projetos</h2>
+        <div class="grade">
+          {% for projeto in relacionados %}
+            {% include "portfolio/partials/card_projeto.html" %}
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

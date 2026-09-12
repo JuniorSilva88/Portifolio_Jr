@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% comment %} ==========================================================================
+   projetos.html — listagem com busca, filtro por linguagem e paginação
+   ==========================================================================
+   Os filtros são links/GET simples (sem JavaScript) de propósito: a URL fica
+   compartilhável e a página funciona mesmo se o JS falhar.
+   ========================================================================== {% endcomment %}
+
+{% block titulo %}Projetos — {{ perfil.nome }}{% endblock %}
+{% block descricao %}Todos os projetos de {{ perfil.nome }}: Python, Django, JavaScript e front-end.{% endblock %}
+
+{% block conteudo %}
+<section class="secao">
+  <div class="container">
+    <div class="secao__cabecalho">
+      <span class="rotulo">Portfólio completo</span>
+      <h2>Projetos</h2>
+      <p class="texto-suave">
+        {{ paginator.count }} projeto{{ paginator.count|pluralize }} publicado{{ paginator.count|pluralize }}.
+        Use a busca ou filtre por tecnologia.
+      </p>
+    </div>
+
+    {% comment %} --- Busca ------------------------------------------------------------
+       method="get" para o termo ficar na URL (?q=django). {% endcomment %}
+    <form class="form" method="get" role="search" style="margin-bottom: var(--e-6)">
+      <div class="form__linha">
+        <input
+          class="campo"
+          type="search"
+          name="q"
+          value="{{ busca }}"
+          placeholder="Buscar por nome, resumo ou tecnologia..."
+          aria-label="Buscar projetos"
+        />
+        <button class="botao botao--principal" type="submit">Buscar</button>
+      </div>
+    </form>
+
+    {# --- Filtro por linguagem -------------------------------------------- #}
+    <div class="chips" style="margin-bottom: var(--e-10)">
+      <a class="chip {% if not linguagem_ativa %}chip--ativo{% endif %}" href="{% url 'portfolio:projetos' %}">
+        Todas
+      </a>
+      {% for linguagem in linguagens %}
+        <a
+          class="chip {% if linguagem_ativa == linguagem %}chip--ativo{% endif %}"
+          href="?linguagem={{ linguagem|urlencode }}"
+        >{{ linguagem }}</a>
+      {% endfor %}
+    </div>
+
+    {# --- Grade de resultados --------------------------------------------- #}
+    <div class="grade">
+      {% for projeto in projetos %}
+        {% include "portfolio/partials/card_projeto.html" %}
+      {% empty %}
+        {# Estado vazio tratado: nunca deixo a página em branco #}
+        <div class="vazio" style="grid-column: 1 / -1">
+          <h3>Nada encontrado</h3>
+          <p>Não achei projeto para esse filtro. Tente outro termo ou veja todos.</p>
+          <p style="margin-top: var(--e-4)">
+            <a class="botao botao--secundario" href="{% url 'portfolio:projetos' %}">Limpar filtros</a>
+          </p>
+        </div>
+      {% endfor %}
+    </div>
+
+    {% comment %} --- Paginação -------------------------------------------------------
+       is_paginated vem da ListView. Mantenho o termo de busca na URL das
+       páginas seguintes, senão o filtro se perderia ao paginar. {% endcomment %}
+    {% if is_paginated %}
+      <nav class="paginacao" aria-label="Paginação">
+        {% if page_obj.has_previous %}
+          <a class="botao botao--secundario" href="?page={{ page_obj.previous_page_number }}{% if busca %}&q={{ busca|urlencode }}{% endif %}{% if linguagem_ativa %}&linguagem={{ linguagem_ativa|urlencode }}{% endif %}">
+            &larr; Anterior
+          </a>
+        {% endif %}
+
+        <span class="texto-suave">
+          Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+        </span>
+
+        {% if page_obj.has_next %}
+          <a class="botao botao--secundario" href="?page={{ page_obj.next_page_number }}{% if busca %}&q={{ busca|urlencode }}{% endif %}{% if linguagem_ativa %}&linguagem={{ linguagem_ativa|urlencode }}{% endif %}">
+            Próxima &rarr;
+          </a>
+        {% endif %}
+      </nav>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

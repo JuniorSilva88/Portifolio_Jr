@@ -1,0 +1,9 @@
+# Dependências do projeto.
+# Fixei as versões (==) para o deploy ser sempre igual ao que eu testei aqui.
+
+Django==6.1.1              # framework web
+gunicorn==23.0.0           # servidor WSGI usado em produção (Render)
+whitenoise==6.11.0         # serve os arquivos estáticos pela própria aplicação
+dj-database-url==3.0.1     # transforma DATABASE_URL em configuração do Django
+psycopg[binary]==3.2.9     # driver do PostgreSQL (produção)
+python-dotenv==1.1.1       # carrega o .env no ambiente local

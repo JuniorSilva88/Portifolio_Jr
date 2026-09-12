@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% comment %} Página de 500. Mantenho ela simples de propósito: se o servidor está com
+   problema, quanto menos coisa a página precisar, melhor. {% endcomment %}
+{% block titulo %}Erro interno{% endblock %}
+{% block conteudo %}
+<div class="container pagina-erro">
+  <span class="pagina-erro__codigo">500</span>
+  <h1>Algo quebrou do meu lado</h1>
+  <p class="texto-suave" style="max-width: 46ch">
+    Já estou vendo o registro do erro. Tente novamente em alguns instantes.
+  </p>
+  <a class="botao botao--principal" href="/">Voltar ao início</a>
+</div>
+{% endblock %}

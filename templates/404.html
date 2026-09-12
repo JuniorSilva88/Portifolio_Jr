@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{# Página de 404 com a identidade do site (entra em ação com DEBUG=False). #}
+{% block titulo %}Página não encontrada — {{ perfil.nome }}{% endblock %}
+{% block conteudo %}
+<div class="container pagina-erro">
+  <span class="pagina-erro__codigo">404</span>
+  <h1>Essa página não existe</h1>
+  <p class="texto-suave" style="max-width: 46ch">
+    O endereço pode ter mudado ou o projeto que você procura foi despublicado.
+  </p>
+  <div style="display: flex; gap: var(--e-3); flex-wrap: wrap; justify-content: center">
+    <a class="botao botao--principal" href="{% url 'portfolio:home' %}">Voltar ao início</a>
+    <a class="botao botao--secundario" href="{% url 'portfolio:projetos' %}">Ver projetos</a>
+  </div>
+</div>
+{% endblock %}
