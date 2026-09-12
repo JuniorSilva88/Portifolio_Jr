@@ -4,7 +4,7 @@
 # cria o serviço web e o banco Postgres já ligados, sem eu preencher formulário.
 services:
   - type: web
-    name: portfolio-django
+    name: portfolio-jr
     runtime: python
     plan: free
     region: oregon
