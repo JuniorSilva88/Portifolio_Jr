@@ -1,21 +1,30 @@
 {
-  "//": "vercel.json — configuração do deploy na Vercel. Aqui o Django roda como função serverless Python: a Vercel constrói api/index.py e eu mando todas as rotas para lá.",
   "version": 2,
   "builds": [
     {
       "src": "api/index.py",
       "use": "@vercel/python",
-      "config": { "maxLambdaSize": "15mb", "runtime": "python3.12" }
+      "config": {
+        "maxLambdaSize": "15mb",
+        "runtime": "python3.12"
+      }
     },
     {
-      "//": "Os estáticos vão junto no bundle depois do collectstatic feito por build_files.sh",
       "src": "build_files.sh",
       "use": "@vercel/static-build",
-      "config": { "distDir": "staticfiles" }
+      "config": {
+        "distDir": "staticfiles"
+      }
     }
   ],
   "routes": [
-    { "src": "/static/(.*)", "dest": "/staticfiles/$1" },
-    { "src": "/(.*)", "dest": "api/index.py" }
+    {
+      "src": "/static/(.*)",
+      "dest": "/staticfiles/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "api/index.py"
+    }
   ]
 }
